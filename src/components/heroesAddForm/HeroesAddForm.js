@@ -1,9 +1,8 @@
-import {useHttp} from '../../hooks/http.hook';
 import { useState } from 'react';
-import { useDispatch, useSelector} from 'react-redux';
+import { useSelector} from 'react-redux';
 import {selectAll} from '../heroesFilters/filtersSlice';
 import store from '../../store';
-import { addHero } from "../heroesList/heroesSlice";
+import { useCreateHeroMutation } from '../../api/apiSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 // Задача для этого компонента:
@@ -18,10 +17,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 const HeroesAddForm = () => {
 
-    const dispatch = useDispatch();
-    const {request} = useHttp();
     const filters = selectAll(store.getState());
     const {filtersLoadingStatus} = useSelector(state => state.filters);
+
+    const [createHero, {isLoading}] = useCreateHeroMutation();
 
     const [newHeroProps, setNewHeroProps] = useState({
         id: '',
@@ -38,10 +37,8 @@ const HeroesAddForm = () => {
             id: uuidv4() 
         }
         
-        request(`http://localhost:3001/heroes`, "POST", JSON.stringify(newHero))
-                    .then(data => console.log(data, 'Posted'))
-                    .then(dispatch(addHero(newHero)))
-                    .catch(err => console.log(err));
+        createHero(newHero).unwrap();
+
         setNewHeroProps({
             id: '',
             name: '',
